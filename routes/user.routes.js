@@ -94,18 +94,26 @@ router.post("/login", async (req, res) => {
 // user update
 router.put("/update-profile", checkAuth, async (req, res) => {
   try {
-    const {channelName, phone} = req.body;
-    let updatedData = {channelName, phone};
+    const { channelName, phone } = req.body;
+    let updatedData = { channelName, phone };
 
-    if(req.files && req.files.logoUrl){
-      const uploadedImage = await cloudinary.uploader.upload(req.files.logoUrl.tempFilePath);
+    if (req.files && req.files.logoUrl) {
+      const uploadedImage = await cloudinary.uploader.upload(
+        req.files.logoUrl.tempFilePath
+      );
       updatedData.logoUrl = uploadedImage.secure_url;
       updatedData.logoId = uploadedImage.public_id;
-    };
+    }
 
-    const updatedUser = await User.findByIdAndUpdate(req.user._id, updatedData, {new: true})
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updatedData,
+      { new: true }
+    );
 
-    res.status(200).json({message: "Profile Updated Successfully", updatedUser})
+    res
+      .status(200)
+      .json({ message: "Profile Updated Successfully", updatedUser });
   } catch (error) {
     console.log(error);
     res
@@ -117,30 +125,35 @@ router.put("/update-profile", checkAuth, async (req, res) => {
 // subscriber
 router.post("/subscriber", checkAuth, async (req, res) => {
   try {
-    const {channelId} = req.body;
+    const { channelId } = req.body;
 
-    if(req.user._id === channelId){
-      return res.status(400).json({error: "You cannot subscribe to yourself"});
+    if (req.user._id === channelId) {
+      return res
+        .status(400)
+        .json({ error: "You cannot subscribe to yourself" });
     }
 
     const currentUser = await User.findByIdAndUpdate(req.user._id, {
-      $addToSet: {subscribedChannels: channelId}
+      $addToSet: { subscribedChannels: channelId },
     });
 
     const subscribedUser = await User.findByIdAndUpdate(channelId, {
-      $inc:{subscribers: 1}
+      $inc: { subscribers: 1 },
     });
 
-    res.status(200).json({message: "Subscribed Successfully"}, {
-      currentUser,
-      subscribedUser
-    })
+    res
+      .status(200)
+      .json({
+        message: "Subscribed Successfully",
+        currentUser,
+        subscribedUser,
+      });
   } catch (error) {
     console.log(error);
     res
       .status(500)
       .json({ error: "something went wrong", message: error.message });
   }
-})
+});
 
 export default router;
