@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(fileUpload({useTempFiles: true, tempFileDir: "/tmp/"}))
 
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/user", videoRoutes);
+app.use("/api/v1/video", videoRoutes);
 
 
 app.listen(PORT, () => {
