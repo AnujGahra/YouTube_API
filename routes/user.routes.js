@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
+import { checkAuth } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -80,7 +81,7 @@ router.post("/login", async (req, res) => {
       logoUrl: existingUser.logoUrl,
       token: token,
       subscribers: existingUser.subscribers,
-      subscribedChannels: existingUser.subscribedChannels
+      subscribedChannels: existingUser.subscribedChannels,
     });
   } catch (error) {
     console.log(error);
@@ -89,5 +90,57 @@ router.post("/login", async (req, res) => {
       .json({ error: "something went wrong", message: error.message });
   }
 });
+
+// user update
+router.put("/update-profile", checkAuth, async (req, res) => {
+  try {
+    const {channelName, phone} = req.body;
+    let updatedData = {channelName, phone};
+
+    if(req.files && req.files.logoUrl){
+      const uploadedImage = await cloudinary.uploader.upload(req.files.logoUrl.tempFilePath);
+      updatedData.logoUrl = uploadedImage.secure_url;
+      updatedData.logoId = uploadedImage.public_id;
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updatedData, {new: true})
+
+    res.status(200).json({message: "Profile Updated Successfully", updatedUser})
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "something went wrong", message: error.message });
+  }
+});
+
+// subscriber
+router.post("/subscriber", checkAuth, async (req, res) => {
+  try {
+    const {channelId} = req.body;
+
+    if(req.user._id === channelId){
+      return res.status(400).json({error: "You cannot subscribe to yourself"});
+    }
+
+    const currentUser = await User.findByIdAndUpdate(req.user._id, {
+      $addToSet: {subscribedChannels: channelId}
+    });
+
+    const subscribedUser = await User.findByIdAndUpdate(channelId, {
+      $inc:{subscribers: 1}
+    });
+
+    res.status(200).json({message: "Subscribed Successfully"}, {
+      currentUser,
+      subscribedUser
+    })
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "something went wrong", message: error.message });
+  }
+})
 
 export default router;
