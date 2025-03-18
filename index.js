@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 
 import { ConnectDB } from "./config/db.config.js";
 import userRoutes from "./routes/user.routes.js";
+import videoRoutes from "./routes/video.routes.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 app.use(fileUpload({useTempFiles: true, tempFileDir: "/tmp/"}))
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/user", videoRoutes);
 
 
 app.listen(PORT, () => {
