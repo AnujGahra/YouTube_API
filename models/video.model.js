@@ -44,21 +44,6 @@ const videoSchema = new mongoose.Schema(
         trim: true,
       },
     ],
-    likes: {
-        type: Number,
-        default: 0,
-        min: 0,
-    },
-    dislikes: {
-        type: Number,
-        default: 0,
-        min: 0,
-    },
-    views: {
-        type: Number,
-        default: 0,
-        min: 0,
-    },
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     disLikedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     viewedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -67,22 +52,22 @@ const videoSchema = new mongoose.Schema(
 );
 
 // Virtual fields for likes, dislikes, and views
-// videoSchema.virtual("likes").get(function () {
-//   return this.likedBy.length;
-// });
+videoSchema.virtual("likes").get(function () {
+  return this.likedBy.length;
+});
 
-// videoSchema.virtual("dislikes").get(function () {
-//   return this.disLikedBy.length;
-// });
+videoSchema.virtual("dislikes").get(function () {
+  return this.disLikedBy.length;
+});
 
-// videoSchema.virtual("views").get(function () {
-//   return this.viewedBy.length;
-// });
+videoSchema.virtual("views").get(function () {
+  return this.viewedBy.length;
+});
 
 // Ensure virtual fields are included in JSON output
-// videoSchema.set("toJSON", {
-//   virtuals: true,
-// });
+videoSchema.set("toJSON", {
+  virtuals: true,
+});
 
 const videoModel = mongoose.model("Video", videoSchema);
 export default videoModel;
